@@ -80,6 +80,11 @@ import {
   setNumberFormatPreference,
 } from '../../models/formatting-preferences'
 import { validateCopilotAppPath } from '../../lib/copilot-app'
+import {
+  getWSLGitPreference,
+  setWSLGitPreference,
+  type WSLGitPreference,
+} from '../../lib/git/wsl'
 
 interface IPreferencesProps {
   readonly dispatcher: Dispatcher
@@ -181,6 +186,7 @@ interface IPreferencesState {
   readonly showDiffCheckMarks: boolean
 
   readonly selectedGitTabIndex?: number
+  readonly wslGitPreference: WSLGitPreference
   readonly enableGitHookEnv: boolean | undefined
   readonly cacheGitHookEnv: boolean | undefined
   readonly selectedGitHookEnvShell: string | undefined
@@ -258,6 +264,7 @@ export class Preferences extends React.Component<
       cacheGitHookEnv: getCacheHooksEnv(),
       selectedGitHookEnvShell: getGitHookEnvShell(),
       hooksPreferencesDirty: false,
+      wslGitPreference: getWSLGitPreference(),
       selectedCopilotModelsByAccount: this.props.selectedCopilotModelsByAccount,
       alwaysUseCopilotForConflictResolution:
         this.props.alwaysUseCopilotForConflictResolution,
@@ -515,6 +522,10 @@ export class Preferences extends React.Component<
     this.setState({ selectedGitTabIndex: index })
   }
 
+  private onWSLGitPreferenceChanged = (wslGitPreference: WSLGitPreference) => {
+    this.setState({ wslGitPreference })
+  }
+
   private onEnableGitHookEnvChanged = (enableGitHookEnv: boolean) => {
     this.setState({ enableGitHookEnv, hooksPreferencesDirty: true })
   }
@@ -624,6 +635,8 @@ export class Preferences extends React.Component<
               onEditGlobalGitConfig={this.props.onEditGlobalGitConfig}
               selectedTabIndex={this.state.selectedGitTabIndex}
               onSelectedTabIndexChanged={this.onSelectedGitTabIndexChanged}
+              wslGitPreference={this.state.wslGitPreference}
+              onWSLGitPreferenceChanged={this.onWSLGitPreferenceChanged}
               onEnableGitHookEnvChanged={this.onEnableGitHookEnvChanged}
               onCacheGitHookEnvChanged={this.onCacheGitHookEnvChanged}
               onSelectedShellChanged={this.onSelectedGitHookEnvShellChanged}
@@ -1198,7 +1211,16 @@ export class Preferences extends React.Component<
       dispatcher.setPreferAbsoluteDates(this.state.preferAbsoluteDates)
     }
 
+    const wslGitChanged =
+      __WIN32__ && this.state.wslGitPreference !== getWSLGitPreference()
+    if (wslGitChanged) {
+      setWSLGitPreference(this.state.wslGitPreference)
+    }
+
     this.props.onDismissed()
+    if (wslGitChanged && this.props.repository !== null) {
+      await dispatcher.refreshRepository(this.props.repository)
+    }
   }
 
   private onTabClicked = (selectedIndex: number) => {

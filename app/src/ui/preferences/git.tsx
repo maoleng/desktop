@@ -8,6 +8,8 @@ import { GitConfigUserForm } from '../lib/git-config-user-form'
 import { TabBar } from '../tab-bar'
 import { Checkbox, CheckboxValue } from '../lib/checkbox'
 import { Select } from '../lib/select'
+import type { WSLGitPreference } from '../../lib/git/wsl'
+import { WSLGitSettings } from './wsl-git-settings'
 import {
   shellFriendlyNames,
   SupportedHooksEnvShell,
@@ -29,6 +31,9 @@ interface IGitProps {
 
   readonly selectedTabIndex?: number
   readonly onSelectedTabIndexChanged: (index: number) => void
+
+  readonly wslGitPreference: WSLGitPreference
+  readonly onWSLGitPreferenceChanged: (preference: WSLGitPreference) => void
 
   readonly onEnableGitHookEnvChanged: (enableGitHookEnv: boolean) => void
   readonly onCacheGitHookEnvChanged: (cacheGitHookEnv: boolean) => void
@@ -147,6 +152,7 @@ export class Git extends React.Component<IGitProps> {
           <span>Author</span>
           <span>Default branch</span>
           <span>Hooks</span>
+          {__WIN32__ && <span>WSL</span>}
         </TabBar>
         <div className="git-preferences-content">{this.renderCurrentTab()}</div>
       </DialogContent>
@@ -160,6 +166,13 @@ export class Git extends React.Component<IGitProps> {
       return this.renderDefaultBranchSetting()
     } else if (this.selectedTabIndex === 2) {
       return this.renderHooksSettings()
+    } else if (__WIN32__ && this.selectedTabIndex === 3) {
+      return (
+        <WSLGitSettings
+          preference={this.props.wslGitPreference}
+          onPreferenceChanged={this.props.onWSLGitPreferenceChanged}
+        />
+      )
     }
 
     return null

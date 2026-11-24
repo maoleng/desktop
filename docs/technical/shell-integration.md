@@ -19,6 +19,15 @@ review.
 
 ## Windows
 
+The **File → Options → Git → WSL** setting controls Git used for local
+repository reads, including Changes, diffs, branches, and history. Open the
+repository at its Windows UNC path, such as
+`\\wsl.localhost\Ubuntu-24.04\home\user\project`, and select its distribution
+or let Desktop use each repository's distribution automatically. Git must be
+installed in that distribution. Commits, network operations, and hook
+integration use Desktop's bundled Git. The shell setting below controls which
+terminal Desktop opens.
+
 The source for the Windows shell integration is found in [`app/src/lib/shells/win32.ts`](https://github.com/desktop/desktop/blob/development/app/src/lib/shells/win32.ts).
 
 These shells are currently supported:
