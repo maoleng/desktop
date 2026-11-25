@@ -96,6 +96,8 @@ export async function resetPaths(
 
 /** Unstage all paths. */
 export async function unstageAll(repository: Repository): Promise<true> {
-  await git(['reset', '--', '.'], repository.path, 'unstageAll')
+  // The next step stages explicit paths. Refreshing every tracked file here
+  // can be slow across the WSL filesystem boundary.
+  await git(['reset', '--no-refresh', '--', '.'], repository.path, 'unstageAll')
   return true
 }
